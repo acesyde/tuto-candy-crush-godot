@@ -7,7 +7,8 @@ export (int) var x_start
 export (int) var y_start
 export (int) var offset
 
-var possible_pieces = [
+# The piece array
+var possible_pieces: Array = [
 	preload("res://Scenes/blue_piece.tscn"),
 	preload("res://Scenes/green_piece.tscn"),
 	preload("res://Scenes/light_green_piece.tscn"),
@@ -16,7 +17,12 @@ var possible_pieces = [
 	preload("res://Scenes/yellow_piece.tscn")
 ]
 
-var all_pieces = []
+# The current pieces in the scene
+var all_pieces: Array = []
+
+# Touch variables
+var first_touch: Vector2 = Vector2.ZERO
+var final_touch: Vector2 = Vector2.ZERO
 
 func _ready():
 	randomize()
@@ -33,7 +39,7 @@ func make_2d_array() -> Array:
 	
 	return array
 
-func spawn_pieces():
+func spawn_pieces() -> void:
 	for y in width:
 		for x in height:
 			# choose a random number and store it
@@ -50,7 +56,7 @@ func spawn_pieces():
 			piece.position = grid_to_pixel(y,x)
 			all_pieces[y][x] = piece
 
-func match_at(y:int, x: int, color: String):
+func match_at(y:int, x: int, color: String) -> bool:
 	if y > 1:
 		if all_pieces[y - 1][x] != null && all_pieces[y - 2][x] != null:
 			if all_pieces[y - 1][x].color == color && all_pieces[y - 2][x].color == color:
@@ -59,8 +65,26 @@ func match_at(y:int, x: int, color: String):
 		if all_pieces[y][x - 1] != null && all_pieces[y][x - 2] != null:
 			if all_pieces[y][x - 1].color == color && all_pieces[y][x - 2].color == color:
 				return true
+	
+	return false
 
 func grid_to_pixel(column: int, row: int) -> Vector2:
 	var new_x = x_start + offset * column
 	var new_y = y_start + -offset * row
 	return Vector2(new_x, new_y)
+
+func pixel_to_grid(x: float, y: float) -> Vector2:
+	var new_x = round((x - x_start) / offset)
+	var new_y = round((y - y_start) / -offset)
+	return Vector2(new_x, new_y)
+
+func touch_input() -> void:
+	if Input.is_action_just_pressed("ui_touch"):
+		first_touch = get_global_mouse_position()
+		var grid_position: Vector2 = pixel_to_grid(first_touch.x, first_touch.y)
+		print(grid_position)
+	if Input.is_action_just_released("ui_touch"):
+		final_touch = get_global_mouse_position()
+
+func _process(delta: float):
+	touch_input()
