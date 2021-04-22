@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Top UI v 2.png-b036290aa4d081db5d80ad4a75646c1e.stex"
+path="res://.import/explode_3.png-c2d34e3a4a38aef5d03ddb17b50bc209.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/Top UI v 2.png"
-dest_files=[ "res://.import/Top UI v 2.png-b036290aa4d081db5d80ad4a75646c1e.stex" ]
+source_file="res://Art/Particles and effects/Explosion V1/explode_3.png"
+dest_files=[ "res://.import/explode_3.png-c2d34e3a4a38aef5d03ddb17b50bc209.stex" ]
 
 [params]
 

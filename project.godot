@@ -10,12 +10,12 @@ config_version=4
 
 _global_script_classes=[  ]
 _global_script_class_icons={
-
 }
 
 [application]
 
 config/name="CandyCrush"
+run/main_scene="res://Scenes/game_window.tscn"
 config/icon="res://icon.png"
 
 [display]
@@ -37,5 +37,6 @@ ui_touch={
 
 [rendering]
 
-quality/2d/use_pixel_snap=true
+2d/snapping/use_gpu_pixel_snap=true
 environment/default_environment="res://default_env.tres"
+quality/2d/use_pixel_snap=true
