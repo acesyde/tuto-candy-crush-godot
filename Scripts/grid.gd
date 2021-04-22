@@ -23,7 +23,7 @@ func _ready():
 	all_pieces = make_2d_array()
 	spawn_pieces()
 
-func make_2d_array():
+func make_2d_array() -> Array:
 	var array = []
 	
 	for y in width:
@@ -38,12 +38,29 @@ func spawn_pieces():
 		for x in height:
 			# choose a random number and store it
 			var rand = floor(rand_range(0, possible_pieces.size()))
-			# Instance that piece from the array
 			var piece = possible_pieces[rand].instance()
+			var loops = 0
+			
+			while match_at(y,x, piece.color) && loops < 100:
+				rand = floor(rand_range(0, possible_pieces.size()))
+				piece = possible_pieces[rand].instance()
+				loops += 1
+			
 			add_child(piece)
 			piece.position = grid_to_pixel(y,x)
-			
-func grid_to_pixel(column: int, row: int):
+			all_pieces[y][x] = piece
+
+func match_at(y:int, x: int, color: String):
+	if y > 1:
+		if all_pieces[y - 1][x] != null && all_pieces[y - 2][x] != null:
+			if all_pieces[y - 1][x].color == color && all_pieces[y - 2][x].color == color:
+				return true
+	if x > 1:
+		if all_pieces[y][x - 1] != null && all_pieces[y][x - 2] != null:
+			if all_pieces[y][x - 1].color == color && all_pieces[y][x - 2].color == color:
+				return true
+
+func grid_to_pixel(column: int, row: int) -> Vector2:
 	var new_x = x_start + offset * column
 	var new_y = y_start + -offset * row
 	return Vector2(new_x, new_y)
