@@ -23,6 +23,7 @@ var all_pieces: Array = []
 # Touch variables
 var first_touch: Vector2 = Vector2.ZERO
 var final_touch: Vector2 = Vector2.ZERO
+var controlling: bool = false
 
 func _ready():
 	randomize()
@@ -78,13 +79,44 @@ func pixel_to_grid(x: float, y: float) -> Vector2:
 	var new_y = round((y - y_start) / -offset)
 	return Vector2(new_x, new_y)
 
+func is_in_grid(column: int, row: int) -> bool:
+	if column >= 0 && column < width:
+		if row >= 0 && row < height:
+			return true
+	return false
+
 func touch_input() -> void:
 	if Input.is_action_just_pressed("ui_touch"):
 		first_touch = get_global_mouse_position()
 		var grid_position: Vector2 = pixel_to_grid(first_touch.x, first_touch.y)
-		print(grid_position)
+		if is_in_grid(grid_position.x, grid_position.y):
+			controlling = true
 	if Input.is_action_just_released("ui_touch"):
 		final_touch = get_global_mouse_position()
+		var grid_position: Vector2 = pixel_to_grid(final_touch.x, final_touch.y)
+		if is_in_grid(grid_position.x, grid_position.y) && controlling:
+			touch_difference(pixel_to_grid(first_touch.x, first_touch.y), grid_position)
+			
+func swap_pieces(column:int, row:int, direction: Vector2) -> void:
+	var first_piece = all_pieces[column][row]
+	var other_piece = all_pieces[column + direction.x][row + direction.y]
+	all_pieces[column][row] = other_piece
+	all_pieces[column + direction.x][row + direction.y] = first_piece
+	first_piece.position = grid_to_pixel(column + direction.x, row + direction.y)
+	other_piece.position = grid_to_pixel(column, row)
+	
+func touch_difference(grid_one: Vector2, grid_two: Vector2) -> void:
+	var difference: Vector2 = grid_two - grid_one
+	if abs(difference.x) > abs(difference.y):
+		if difference.x > 0:
+			swap_pieces(grid_one.x, grid_one.y, Vector2.RIGHT)
+		elif difference.x < 0:
+			swap_pieces(grid_one.x, grid_one.y, Vector2.LEFT)
+	elif abs(difference.y) > abs(difference.x):
+		if difference.y > 0:
+			swap_pieces(grid_one.x, grid_one.y, Vector2.DOWN)
+		elif difference.y < 0:
+			swap_pieces(grid_one.x, grid_one.y, Vector2.UP)
 
 func _process(delta: float):
 	touch_input()
