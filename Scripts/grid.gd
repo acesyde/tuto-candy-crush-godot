@@ -97,7 +97,7 @@ func touch_input() -> void:
 		if is_in_grid(grid_position.x, grid_position.y) && controlling:
 			touch_difference(pixel_to_grid(first_touch.x, first_touch.y), grid_position)
 			controlling = false
-			
+
 func swap_pieces(column:int, row:int, direction: Vector2) -> void:
 	var first_piece: piece = all_pieces[column][row]
 	var other_piece: piece = all_pieces[column + direction.x][row + direction.y]
@@ -105,7 +105,8 @@ func swap_pieces(column:int, row:int, direction: Vector2) -> void:
 	all_pieces[column + direction.x][row + direction.y] = first_piece
 	first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
 	other_piece.move(grid_to_pixel(column, row))
-	
+	find_matches()
+
 func touch_difference(grid_one: Vector2, grid_two: Vector2) -> void:
 	var difference: Vector2 = grid_two - grid_one
 	if abs(difference.x) > abs(difference.y):
@@ -121,3 +122,28 @@ func touch_difference(grid_one: Vector2, grid_two: Vector2) -> void:
 
 func _process(delta: float):
 	touch_input()
+
+func find_matches() -> void:
+	for y in width:
+		for x in height:
+			if all_pieces[y][x] != null:
+				var current_color = all_pieces[y][x].color
+				if y > 0 && y < width - 1:
+					if all_pieces[y-1][x] != null && all_pieces[y+1][x] != null:
+						if all_pieces[y-1][x].color == current_color && all_pieces[y+1][x].color == current_color:
+							all_pieces[y-1][x].matched = true
+							all_pieces[y-1][x].dim()
+							all_pieces[y][x].matched = true
+							all_pieces[y][x].dim()
+							all_pieces[y+1][x].matched = true
+							all_pieces[y+1][x].dim()
+				if x > 0 && x < height - 1:
+					if all_pieces[y][x-1] != null && all_pieces[y][x+1] != null:
+						if all_pieces[y][x-1].color == current_color && all_pieces[y][x+1].color == current_color:
+							all_pieces[y][x-1].matched = true
+							all_pieces[y][x-1].dim()
+							all_pieces[y][x].matched = true
+							all_pieces[y][x].dim()
+							all_pieces[y][x+1].matched = true
+							all_pieces[y][x+1].dim()
+	pass
