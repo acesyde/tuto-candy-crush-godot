@@ -166,9 +166,31 @@ func collapse_columns() -> void:
 						all_pieces[y][x] = all_pieces[y][k]
 						all_pieces[y][k] = null
 						break
+	get_parent().get_node("refill_timer").start()
+
+func refill_columns() -> void:
+	for y in width:
+		for x in height:
+			if all_pieces[y][x] == null:
+				# choose a random number and store it
+				var rand = floor(rand_range(0, possible_pieces.size()))
+				var piece = possible_pieces[rand].instance()
+				var loops = 0
+				
+				while match_at(y,x, piece.color) && loops < 100:
+					rand = floor(rand_range(0, possible_pieces.size()))
+					piece = possible_pieces[rand].instance()
+					loops += 1
+				
+				add_child(piece)
+				piece.position = grid_to_pixel(y,x)
+				all_pieces[y][x] = piece
 				
 func _on_destroy_timer_timeout() -> void:
 	destroy_matched()
 
 func _on_collapse_timer_timeout() -> void:
 	collapse_columns()
+
+func _on_refill_timer_timeout() -> void:
+	refill_columns()
