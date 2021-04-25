@@ -21,6 +21,13 @@ var possible_pieces: Array = [
 # The current pieces in the scene
 var all_pieces: Array = []
 
+# Swap back variables
+var piece_one: piece = null
+var piece_two: piece = null
+var last_place: Vector2 = Vector2.ZERO
+var last_direction: Vector2 = Vector2.ZERO
+var move_checked: bool = false
+
 # Touch variables
 var first_touch: Vector2 = Vector2.ZERO
 var final_touch: Vector2 = Vector2.ZERO
@@ -109,12 +116,29 @@ func swap_pieces(column:int, row:int, direction: Vector2) -> void:
 	var first_piece: piece = all_pieces[column][row]
 	var other_piece: piece = all_pieces[column + direction.x][row + direction.y]
 	if first_piece != null && other_piece != null:
+		store_info(first_piece, other_piece,Vector2(column, row),direction)
 		state = WAIT
 		all_pieces[column][row] = other_piece
 		all_pieces[column + direction.x][row + direction.y] = first_piece
 		first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
 		other_piece.move(grid_to_pixel(column, row))
-		find_matches()
+		if move_checked == false:
+			find_matches()
+
+func store_info(first_piece: piece, other_piece: piece, place: Vector2, direction: Vector2) -> void:
+	piece_one = first_piece
+	piece_two = other_piece
+	last_place = place
+	last_direction = direction
+	pass
+
+func swap_back() -> void:
+	# Move the previously swapped pieces back to the previous place
+	if piece_one != null && piece_two != null:
+		swap_pieces(last_place.x, last_place.y, last_direction)
+	state = MOVE
+	move_checked = false
+	pass
 
 func touch_difference(grid_one: Vector2, grid_two: Vector2) -> void:
 	var difference: Vector2 = grid_two - grid_one
@@ -159,13 +183,21 @@ func find_matches() -> void:
 	get_parent().get_node("destroy_timer").start()
 
 func destroy_matched():
+	var was_matched = false
 	for y in width:
 		for x in height:
 			if all_pieces[y][x] != null:
 				if all_pieces[y][x].matched == true:
+					was_matched = true
 					all_pieces[y][x].queue_free()
 					all_pieces[y][x] = null
-	get_parent().get_node("collapse_timer").start()
+	
+	move_checked = true
+	
+	if was_matched == true:
+		get_parent().get_node("collapse_timer").start()
+	else:
+		swap_back()
 
 func collapse_columns() -> void:
 	for y in width:
@@ -198,7 +230,7 @@ func refill_columns() -> void:
 				piece.move(grid_to_pixel(y,x))
 				all_pieces[y][x] = piece
 	after_refill()
-				
+
 func after_refill() -> void:
 	for y in width:
 		for x in height:
@@ -208,6 +240,7 @@ func after_refill() -> void:
 					get_parent().get_node("destroy_timer").start()
 					return
 	state = MOVE
+	move_checked = false
 
 func _on_destroy_timer_timeout() -> void:
 	destroy_matched()
