@@ -6,6 +6,7 @@ export (int) var height
 export (int) var x_start
 export (int) var y_start
 export (int) var offset
+export (int) var y_offset
 
 # The piece array
 var possible_pieces: Array = [
@@ -183,7 +184,8 @@ func refill_columns() -> void:
 					loops += 1
 				
 				add_child(piece)
-				piece.position = grid_to_pixel(y,x)
+				piece.position = grid_to_pixel(y,x-y_offset)
+				piece.move(grid_to_pixel(y,x))
 				all_pieces[y][x] = piece
 				
 func _on_destroy_timer_timeout() -> void:
