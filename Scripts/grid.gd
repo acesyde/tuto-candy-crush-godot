@@ -25,9 +25,17 @@ var all_pieces: Array = []
 var first_touch: Vector2 = Vector2.ZERO
 var final_touch: Vector2 = Vector2.ZERO
 var controlling: bool = false
+var state
+
+# States
+enum {
+	WAIT,
+	MOVE
+}
 
 func _ready():
 	randomize()
+	state = MOVE
 	all_pieces = make_2d_array()
 	spawn_pieces()
 
@@ -101,6 +109,7 @@ func swap_pieces(column:int, row:int, direction: Vector2) -> void:
 	var first_piece: piece = all_pieces[column][row]
 	var other_piece: piece = all_pieces[column + direction.x][row + direction.y]
 	if first_piece != null && other_piece != null:
+		state = WAIT
 		all_pieces[column][row] = other_piece
 		all_pieces[column + direction.x][row + direction.y] = first_piece
 		first_piece.move(grid_to_pixel(column + direction.x, row + direction.y))
@@ -121,7 +130,8 @@ func touch_difference(grid_one: Vector2, grid_two: Vector2) -> void:
 			swap_pieces(grid_one.x, grid_one.y, Vector2.UP)
 
 func _process(delta: float):
-	touch_input()
+	if state == MOVE:
+		touch_input()
 
 func find_matches() -> void:
 	for y in width:
@@ -187,7 +197,18 @@ func refill_columns() -> void:
 				piece.position = grid_to_pixel(y,x-y_offset)
 				piece.move(grid_to_pixel(y,x))
 				all_pieces[y][x] = piece
+	after_refill()
 				
+func after_refill() -> void:
+	for y in width:
+		for x in height:
+			if all_pieces[y][x] != null:
+				if match_at(y,x, all_pieces[y][x].color):
+					find_matches()
+					get_parent().get_node("destroy_timer").start()
+					return
+	state = MOVE
+
 func _on_destroy_timer_timeout() -> void:
 	destroy_matched()
 
